@@ -22,7 +22,7 @@
             border-radius: 8px;
             padding: 10px;
             background-color: #f9f9f9;
-            min-height: 200px;
+            min-height: 300px;
         }
         .column h2 {
             text-align: center;
@@ -74,22 +74,63 @@
     </div>
 
     <h2>Éléments à classer</h2>
-    <div id="items">
-        <div class="item" draggable="true" data-zone="basique">Équipement individuel de flottabilité</div>
-        <div class="item" draggable="true" data-zone="basique">Extincteur</div>
-        <div class="item" draggable="true" data-zone="cotier">Dispositif de repérage homme à la mer</div>
-        <div class="item" draggable="true" data-zone="cotier">3 feux à main</div>
-        <div class="item" draggable="true" data-zone="semi-hauturier">Radeau de survie</div>
-        <div class="item" draggable="true" data-zone="semi-hauturier">VHF fixe</div>
-        <div class="item" draggable="true" data-zone="hauturier">Radiobalise de localisation des sinistres</div>
-        <div class="item" draggable="true" data-zone="hauturier">Téléphone satellite</div>
-        <div class="item" draggable="true" data-zone="semi-hauturier">Harnais et longe</div>
-        <div class="item" draggable="true" data-zone="cotier">Cartes marines</div>
-    </div>
+    <div id="items"></div>
 
     <button id="validateButton">Valider</button>
 
     <script>
+        // Liste des éléments avec leur zone correcte
+        const elements = [
+            {name: "Équipement individuel de flottabilité", zone: "basique"},
+            {name: "Dispositif lumineux collectif ou individuel", zone: "basique"},
+            {name: "Extincteur", zone: "basique"},
+            {name: "Dispositif d’assèchement manuel", zone: "basique"},
+            {name: "Dispositif de remorquage", zone: "basique"},
+            {name: "Annuaire des marées", zone: "basique"},
+            {name: "Ligne de mouillage", zone: "basique"},
+            {name: "Pavillon national", zone: "basique"},
+            {name: "Dispositif de repérage homme à la mer", zone: "cotier"},
+            {name: "3 feux à main", zone: "cotier"},
+            {name: "Compas magnétique étanche", zone: "cotier"},
+            {name: "Cartes marines", zone: "cotier"},
+            {name: "Règlement international pour prévenir les abordages (RIPAM)", zone: "cotier"},
+            {name: "Descriptif du balisage", zone: "cotier"},
+            {name: "VHF fixe", zone: "semi-hauturier"},
+            {name: "Radeau de survie", zone: "semi-hauturier"},
+            {name: "Matériel pour faire le point", zone: "semi-hauturier"},
+            {name: "Journal de bord", zone: "semi-hauturier"},
+            {name: "Livre des feux", zone: "semi-hauturier"},
+            {name: "Récepteur bulletin météo", zone: "semi-hauturier"},
+            {name: "Harnais et longe", zone: "semi-hauturier"},
+            {name: "Trousse de secours", zone: "semi-hauturier"},
+            {name: "Projecteur étanche", zone: "semi-hauturier"},
+            {name: "VHF portative", zone: "hauturier"},
+            {name: "Radiobalise de localisation des sinistres", zone: "hauturier"},
+            {name: "Téléphone satellite", zone: "hauturier"}
+        ];
+
+        // Mélange aléatoire des éléments
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // échange les éléments
+            }
+        }
+
+        // Affichage des éléments mélangés
+        const itemsContainer = document.getElementById('items');
+        shuffleArray(elements); // Mélange les éléments
+
+        elements.forEach(element => {
+            const item = document.createElement('div');
+            item.classList.add('item');
+            item.setAttribute('draggable', 'true');
+            item.setAttribute('data-zone', element.zone);
+            item.textContent = element.name;
+            itemsContainer.appendChild(item);
+        });
+
+        // Drag and Drop logic
         const items = document.querySelectorAll('.item');
         const columns = document.querySelectorAll('.column');
         const validateButton = document.getElementById('validateButton');
