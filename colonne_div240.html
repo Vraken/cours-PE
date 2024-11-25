@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement des équipements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            width: 22%;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            min-height: 200px;
+        }
+        .column h2 {
+            text-align: center;
+        }
+        .item {
+            margin: 5px;
+            padding: 10px;
+            background-color: #d4e6f1;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            text-align: center;
+            cursor: grab;
+        }
+        .item.dragging {
+            opacity: 0.5;
+        }
+        .column.drag-over {
+            background-color: #dff9fb;
+        }
+        .item.correct {
+            border: 2px solid green;
+        }
+        .item.incorrect {
+            border: 2px solid red;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Classez les équipements dans les bonnes colonnes</h1>
+    <div class="container">
+        <div class="column" id="basique">
+            <h2>Basique</h2>
+        </div>
+        <div class="column" id="cotier">
+            <h2>Côtier</h2>
+        </div>
+        <div class="column" id="semi-hauturier">
+            <h2>Semi-Hauturier</h2>
+        </div>
+        <div class="column" id="hauturier">
+            <h2>Hauturier</h2>
+        </div>
+    </div>
+
+    <h2>Éléments à classer</h2>
+    <div id="items">
+        <div class="item" draggable="true" data-zone="basique">Équipement individuel de flottabilité</div>
+        <div class="item" draggable="true" data-zone="basique">Extincteur</div>
+        <div class="item" draggable="true" data-zone="cotier">Dispositif de repérage homme à la mer</div>
+        <div class="item" draggable="true" data-zone="cotier">3 feux à main</div>
+        <div class="item" draggable="true" data-zone="semi-hauturier">Radeau de survie</div>
+        <div class="item" draggable="true" data-zone="semi-hauturier">VHF fixe</div>
+        <div class="item" draggable="true" data-zone="hauturier">Radiobalise de localisation des sinistres</div>
+        <div class="item" draggable="true" data-zone="hauturier">Téléphone satellite</div>
+        <div class="item" draggable="true" data-zone="semi-hauturier">Harnais et longe</div>
+        <div class="item" draggable="true" data-zone="cotier">Cartes marines</div>
+    </div>
+
+    <button id="validateButton">Valider</button>
+
+    <script>
+        const items = document.querySelectorAll('.item');
+        const columns = document.querySelectorAll('.column');
+        const validateButton = document.getElementById('validateButton');
+
+        // Drag start
+        items.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                item.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', item.textContent);
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+            });
+        });
+
+        // Drag over and drop for columns
+        columns.forEach(column => {
+            column.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                column.classList.add('drag-over');
+            });
+
+            column.addEventListener('dragleave', () => {
+                column.classList.remove('drag-over');
+            });
+
+            column.addEventListener('drop', (e) => {
+                e.preventDefault();
+                column.classList.remove('drag-over');
+                const data = e.dataTransfer.getData('text/plain');
+                const draggedItem = Array.from(items).find(item => item.textContent === data);
+                if (draggedItem) {
+                    column.appendChild(draggedItem);
+                }
+            });
+        });
+
+        // Validation logic
+        validateButton.addEventListener('click', () => {
+            items.forEach(item => {
+                const correctZone = item.getAttribute('data-zone');
+                const parentColumn = item.parentElement.id;
+
+                if (correctZone === parentColumn) {
+                    item.classList.add('correct');
+                    item.classList.remove('incorrect');
+                } else {
+                    item.classList.add('incorrect');
+                    item.classList.remove('correct');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
