@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Navigation</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        // Sélectionner le canevas et son contexte
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Variables globales
+        let boat;
+        let startSide, endSide;
+        let buoy = {
+            type: getRandomCardinalType(),
+            x: canvas.width / 2 - 15, // Position centrale horizontale
+            y: canvas.height / 2 - 25, // Position centrale verticale
+            width: 30,
+            height: 50,
+        };
+
+        let buoyPassedCorrectly = false; // Si le joueur passe correctement la balise
+        let gameWon = false;
+        let gameOver = false;
+
+        // Images des balises
+        const buoyImages = {
+            Nord: new Image(),
+            Sud: new Image(),
+            Est: new Image(),
+            Ouest: new Image()
+        };
+
+        // Charger les images des balises
+        buoyImages.Nord.src = 'nord.png';
+        buoyImages.Sud.src = 'sud.png';
+        buoyImages.Est.src = 'est.png';
+        buoyImages.Ouest.src = 'ouest.png';
+
+        // Choisir un côté aléatoirement
+        function getRandomSide() {
+            const sides = ["top", "bottom", "left", "right"];
+            return sides[Math.floor(Math.random() * sides.length)];
+        }
+
+        // Initialiser le bateau en fonction du côté de départ
+        function initializeBoat() {
+            // Choisir les côtés de départ et d'arrivée
+            startSide = getRandomSide();
+            do {
+                endSide = getRandomSide();
+            } while (endSide === startSide);
+
+            // Position initiale du bateau selon le côté de départ
+            switch (startSide) {
+                case "top":
+                    boat = {
+                        x: 50,
+                        y: 0,
+                        width: 40,
+                        height: 40,
+                        color: "pink",
+                        speed: 5,
+                    };
+                    break;
+                case "bottom":
+                    boat = {
+                        x: 50,
+                        y: canvas.height - 40,
+                        width: 40,
+                        height: 40,
+                        color: "pink",
+                        speed: 5,
+                    };
+                    break;
+                case "left":
+                    boat = {
+                        x: 0,
+                        y: canvas.height / 2 - 20,
+                        width: 40,
+                        height: 40,
+                        color: "pink",
+                        speed: 5,
+                    };
+                    break;
+                case "right":
+                    boat = {
+                        x: canvas.width - 40,
+                        y: canvas.height / 2 - 20,
+                        width: 40,
+                        height: 40,
+                        color: "pink",
+                        speed: 5,
+                    };
+                    break;
+            }
+
+            // Vérifier et ajuster la position initiale du bateau par rapport à la balise
+            adjustBoatPosition();
+        }
+
+        // Ajuster la position initiale du bateau par rapport à la balise
+        function adjustBoatPosition() {
+            switch (buoy.type) {
+                case "Nord":
+                    if (boat.y + boat.height > buoy.y) {
+                        boat.y = 0; // Déplacer le bateau au-dessus de la balise
+                    }
+                    break;
+                case "Sud":
+                    if (boat.y < buoy.y + buoy.height) {
+                        boat.y = canvas.height - boat.height; // Déplacer le bateau en dessous de la balise
+                    }
+                    break;
+                case "Est":
+                    if (boat.x < buoy.x + buoy.width) {
+                        boat.x = 0; // Déplacer le bateau à gauche de la balise
+                    }
+                    break;
+                case "Ouest":
+                    if (boat.x + boat.width > buoy.x) {
+                        boat.x = canvas.width - boat.width; // Déplacer le bateau à droite de la balise
+                    }
+                    break;
+            }
+        }
+
+        // Gérer les touches pressées
+        let keys = {};
+        window.addEventListener("keydown", (e) => (keys[e.key] = true));
+        window.addEventListener("keyup", (e) => (keys[e.key] = false));
+
+        // Fonction pour obtenir une balise cardinale aléatoire
+        function getRandomCardinalType() {
+            const types = ["Nord", "Sud", "Est", "Ouest"];
+            return types[Math.floor(Math.random() * types.length)];
+        }
+
+        // Mettre à jour la position du bateau
+        function updateBoat() {
+            if (keys["ArrowUp"]) boat.y -= boat.speed;
+            if (keys["ArrowDown"]) boat.y += boat.speed;
+            if (keys["ArrowLeft"]) boat.x -= boat.speed;
+            if (keys["ArrowRight"]) boat.x += boat.speed;
+
+            // Limiter le bateau dans le cadre
+            boat.x = Math.max(0, Math.min(boat.x, canvas.width - boat.width));
+            boat.y = Math.max(0, Math.min(boat.y, canvas.height - boat.height));
+
+            // Vérifier si le joueur passe correctement la balise
+            checkBuoyRules();
+
+            // Vérifier la victoire
+            checkVictory();
+        }
+
+        // Vérifier si le joueur respecte la règle de la balise
+        function checkBuoyRules() {
+            // Vérification de position par rapport à la balise
+            switch (buoy.type) {
+                case "Nord":
+                    buoyPassedCorrectly = (boat.y + boat.height <= buoy.y);
+                    break;
+                case "Sud":
+                    buoyPassedCorrectly = (boat.y >= buoy.y + buoy.height);
+                    break;
+                case "Est":
+                    buoyPassedCorrectly = (boat.x >= buoy.x + buoy.width);
+                    break;
+                case "Ouest":
+                    buoyPassedCorrectly = (boat.x + boat.width <= buoy.x);
+                    break;
+            }
+        }
+
+        // Vérifier si le joueur a gagné
+        function checkVictory() {
+            let isAtCorrectExit = false;
+
+            switch (endSide) {
+                case "top":
+                    isAtCorrectExit = (boat.y <= 0);
+                    break;
+                case "bottom":
+                    isAtCorrectExit = (boat.y + boat.height >= canvas.height);
+                    break;
+                case "left":
+                    isAtCorrectExit = (boat.x <= 0);
+                    break;
+                case "right":
+                    isAtCorrectExit = (boat.x + boat.width >= canvas.width);
+                    break;
+            }
+
+            if (isAtCorrectExit && buoyPassedCorrectly) {
+                gameWon = true;
+            } else if (isAtCorrectExit) {
+                gameOver = true;
+            }
+        }
+
+        // Dessiner le bateau
+        function drawBoat() {
+            ctx.fillStyle = boat.color;
+            ctx.fillRect(boat.x, boat.y, boat.width, boat.height);
+        }
+
+        // Dessiner une balise cardinale
+        function drawBuoy() {
+            // Dessiner l'image de la balise
+            ctx.drawImage(buoyImages[buoy.type], buoy.x, buoy.y, buoy.width, buoy.height);
+        }
+
+        // Dessiner le point de départ et d'arrivée
+        function drawStartAndEnd() {
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "green";
+
+            // Point de départ
+            switch (startSide) {
+                case "top":
+                    ctx.fillText("Départ ↓", 10, 30);
+                    break;
+                case "bottom":
+                    ctx.fillText("Départ ↑", 10, canvas.height - 10);
+                    break;
+                case "left":
+                    ctx.fillText("Départ →", 10, canvas.height / 2);
+                    break;
+                case "right":
+                    ctx.fillText("Départ ←", canvas.width - 100, canvas.height / 2);
+                    break;
+            }
+
+            // Point d'arrivée
+            ctx.fillStyle = "red";
+            switch (endSide) {
+                case "top":
+                    ctx.fillText("Arrivée ↓", canvas.width - 100, 30);
+                    break;
+                case "bottom":
+                    ctx.fillText("Arrivée ↑", canvas.width - 100, canvas.height - 10);
+                    break;
+                case "left":
+                    ctx.fillText("Arrivée →", 10, canvas.height / 2);
+                    break;
+                case "right":
+                    ctx.fillText("Arrivée ←", canvas.width - 100, canvas.height / 2);
+                    break;
+            }
+        }
+
+        // Afficher un message de victoire ou de défaite
+        function displayEndMessage() {
+            ctx.fillStyle = "black";
+            ctx.font = "30px Arial";
+
+            if (gameWon) {
+                ctx.fillText("Vous avez gagné !", canvas.width / 2 - 100, canvas.height / 2);
+            } else if (gameOver) {
+                ctx.fillText("Game Over !", canvas.width / 2 - 80, canvas.height / 2);
+            }
+        }
+
+        // Afficher la position du bateau par rapport à la balise cardinale
+        function displayBoatPosition() {
+            ctx.fillStyle = "blue";
+            ctx.font = "20px Arial";
+            let positionMessage = "";
+
+            switch (buoy.type) {
+                case "Nord":
+                    if (boat.y + boat.height <= buoy.y) {
+                        positionMessage = "Au Nord de la balise";
+                    } else {
+                        positionMessage = "Au Sud de la balise";
+                    }
+                    break;
+                case "Sud":
+                    if (boat.y >= buoy.y + buoy.height) {
+                        positionMessage = "Au Sud de la balise";
+                    } else {
+                        positionMessage = "Au Nord de la balise";
+                    }
+                    break;
+                case "Est":
+                    if (boat.x >= buoy.x + buoy.width) {
+                        positionMessage = "À l'Est de la balise";
+                    } else {
+                        positionMessage = "À l'Ouest de la balise";
+                    }
+                    break;
+                case "Ouest":
+                    if (boat.x + boat.width <= buoy.x) {
+                        positionMessage = "À l'Ouest de la balise";
+                    } else {
+                        positionMessage = "À l'Est de la balise";
+                    }
+                    break;
+            }
+
+            ctx.fillText(positionMessage, 10, 50);
+        }
+
+        // Boucle du jeu
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer l'écran
+
+            if (!gameWon && !gameOver) {
+                updateBoat(); // Mettre à jour la position du bateau
+            }
+
+            drawBoat(); // Dessiner le bateau
+            drawBuoy(); // Dessiner la balise cardinale
+            drawStartAndEnd(); // Dessiner les points de départ et d'arrivée
+            displayBoatPosition(); // Afficher la position du bateau par rapport à la balise
+
+            if (gameWon || gameOver) {
+                displayEndMessage(); // Afficher le message final
+            }
+
+            requestAnimationFrame(gameLoop); // Rejouer la boucle
+        }
+
+        // Initialisation du jeu
+        initializeBoat(); // Initialiser la position du bateau
+        gameLoop(); // Lancer la boucle du jeu
+    </script>
+</body>
+</html>
