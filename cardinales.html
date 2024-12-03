@@ -228,16 +228,16 @@
             // Point de départ
             switch (startSide) {
                 case "top":
-                    ctx.fillText("Départ ↓", 10, 30);
+                    ctx.fillText("Départ ↑", 10, 30);
                     break;
                 case "bottom":
-                    ctx.fillText("Départ ↑", 10, canvas.height - 10);
+                    ctx.fillText("Départ ↓", 10, canvas.height - 10);
                     break;
                 case "left":
-                    ctx.fillText("Départ →", 10, canvas.height / 2);
+                    ctx.fillText("Départ ←", 10, canvas.height / 2);
                     break;
                 case "right":
-                    ctx.fillText("Départ ←", canvas.width - 100, canvas.height / 2);
+                    ctx.fillText("Départ →", canvas.width - 100, canvas.height / 2);
                     break;
             }
 
@@ -245,16 +245,16 @@
             ctx.fillStyle = "red";
             switch (endSide) {
                 case "top":
-                    ctx.fillText("Arrivée ↓", canvas.width - 100, 30);
+                    ctx.fillText("Arrivée ↑", canvas.width - 100, 30);
                     break;
                 case "bottom":
-                    ctx.fillText("Arrivée ↑", canvas.width - 100, canvas.height - 10);
+                    ctx.fillText("Arrivée ↓", canvas.width - 100, canvas.height - 10);
                     break;
                 case "left":
-                    ctx.fillText("Arrivée →", 10, canvas.height / 2);
+                    ctx.fillText("Arrivée ←", 10, canvas.height / 2);
                     break;
                 case "right":
-                    ctx.fillText("Arrivée ←", canvas.width - 100, canvas.height / 2);
+                    ctx.fillText("Arrivée →", canvas.width - 100, canvas.height / 2);
                     break;
             }
         }
